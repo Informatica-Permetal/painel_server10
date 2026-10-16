@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Administração · Painel Server10{% endblock %}
+{% block content %}
+<div class="grade">
+  <section class="cartao">
+    <header><h2>Servidor de e-mail</h2>
+      <span class="selo s-{{ 'ok' if smtp.configured else 'desconhecido' }}">{{ 'Configurado' if smtp.configured else 'Não configurado' }}</span>
+    </header>
+    {% if smtp.configured %}
+      <table>
+        <tr><th scope="row">Servidor</th><td>{{ smtp.host }}:{{ smtp.port }} ({{ smtp.security }})</td></tr>
+        <tr><th scope="row">Remetente</th><td>{{ smtp.sender }}</td></tr>
+        <tr><th scope="row">Usuário</th><td>{{ smtp.user or '—' }} · senha não exibida</td></tr>
+      </table>
+    {% else %}
+      <p>E-mail não configurado. O monitoramento continua funcionando; defina SMTP_HOST, SMTP_FROM e, se necessário,
+        SMTP_USER/SMTP_PASSWORD no arquivo privado <code>/etc/painel-server10/painel.env</code>.</p>
+    {% endif %}
+    <table>
+      <tr><th scope="row">Último envio</th><td>{{ settings.get('last_mail_ok')|dt if settings.get('last_mail_ok') else '—' }}</td></tr>
+      <tr><th scope="row">Último erro</th><td>{{ settings.get('last_mail_error') or '—' }}</td></tr>
+    </table>
+    <form method="post" action="{{ url_for('test_email') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit">Enviar e-mail de teste aos destinatários ativos</button>
+    </form>
+  </section>
+
+  <section class="cartao">
+    <header><h2>Regras de alerta</h2></header>
+    <form method="post" action="{{ url_for('save_settings') }}" class="formulario">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="check"><input type="checkbox" name="alerts_enabled" value="1" {{ 'checked' if settings.alerts_enabled == '1' }}> Enviar alertas por e-mail</label>
+      <label>Severidade mínima
+        <select name="min_severity">
+          <option value="ATENCAO" {{ 'selected' if settings.min_severity == 'ATENCAO' }}>Atenção, desconhecido e crítico</option>
+          <option value="CRITICO" {{ 'selected' if settings.min_severity == 'CRITICO' }}>Somente crítico e desconhecido</option>
+        </select>
+      </label>
+      <label>Intervalo mínimo entre e-mails do mesmo item (minutos)
+        <input type="number" name="cooldown_minutes" min="5" max="1440" value="{{ settings.cooldown_minutes }}" required></label>
+      <label>Lembrete de problema persistente (horas, 0 desativa)
+        <input type="number" name="reminder_hours" min="0" max="168" value="{{ settings.reminder_hours }}" required></label>
+      <button type="submit">Salvar</button>
+    </form>
+  </section>
+
+  <section class="cartao">
+    <header><h2>Destinatários</h2><span class="detalhe">{{ recipients|length }} cadastrado(s)</span></header>
+    <form method="post" action="{{ url_for('add_recipient') }}" class="formulario linha">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="email" name="email" placeholder="nome@empresa.com.br" maxlength="254" required>
+      <button type="submit">Adicionar</button>
+    </form>
+    {% if recipients %}
+    <table>
+      {% for r in recipients %}
+        <tr class="{{ '' if r.enabled else 'ignorado' }}">
+          <th scope="row">{{ r.email }}</th>
+          <td><span class="selo s-{{ 'ok' if r.enabled else 'ignorado' }}">{{ 'Ativo' if r.enabled else 'Inativo' }}</span></td>
+          <td class="acoes">
+            <form method="post" action="{{ url_for('toggle_recipient', rid=r.id) }}" class="inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="secundario">{{ 'Desativar' if r.enabled else 'Ativar' }}</button>
+            </form>
+            <form method="post" action="{{ url_for('delete_recipient', rid=r.id) }}" class="inline confirmar" data-mensagem="Remover {{ r.email }}?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="perigo">Remover</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+      <p class="vazio">Nenhum destinatário cadastrado.</p>
+    {% endif %}
+  </section>
+
+  <section class="cartao">
+    <header><h2>Linha de base dos contadores</h2></header>
+    <p class="detalhe">Contadores cumulativos (SMART e PERC) não são zerados. O painel alerta apenas aumentos em relação à
+      linha de base. Depois de analisar um aumento, aceite os valores atuais como nova linha de base.</p>
+    {% if counters %}
+    <div class="rolagem">
+    <table>
+      <thead><tr><th>Contador</th><th>Base</th><th>Atual</th></tr></thead>
+      {% for c in counters %}
+        <tr><td>{{ c.key }}</td><td>{{ c.baseline }}</td><td class="{{ 'destaque' if c.last > c.baseline }}">{{ c.last }}</td></tr>
+      {% endfor %}
+    </table>
+    </div>
+    {% else %}
+      <p class="vazio">Ainda sem coleta.</p>
+    {% endif %}
+    {% for disk_id in disk_ids %}
+      <form method="post" action="{{ url_for('accept_baseline', disk_id=disk_id) }}" class="inline confirmar" data-mensagem="Aceitar os valores atuais do disco ID {{ disk_id }} como nova linha de base?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="secundario">Aceitar base do disco ID {{ disk_id }}</button>
+      </form>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

@@ -1,0 +1,119 @@
+:root {
+  --fundo: #f3f5f8;
+  --cartao: #ffffff;
+  --texto: #1d2733;
+  --suave: #5d6b7a;
+  --borda: #dde3ea;
+  --topo: #1f3349;
+  --ok: #1e7d46;
+  --ok-fundo: #e3f4ea;
+  --atencao: #9a6100;
+  --atencao-fundo: #fff2d6;
+  --critico: #b3261e;
+  --critico-fundo: #fde4e2;
+  --desconhecido: #4f5d75;
+  --desconhecido-fundo: #e5e9f0;
+  --ignorado: #8a96a3;
+  --ignorado-fundo: #f0f2f5;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font: 15px/1.45 "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+a { color: #1f5fa8; }
+code { background: var(--fundo); padding: 0 4px; border-radius: 3px; }
+
+.topo {
+  display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; justify-content: space-between;
+  background: var(--topo); color: #fff; padding: 12px 24px;
+}
+.marca { font-size: 18px; letter-spacing: .3px; }
+.topo nav { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: center; }
+.topo nav a, .topo .link { color: #dfe8f2; text-decoration: none; font: inherit; }
+.topo nav a:hover, .topo .link:hover { color: #fff; text-decoration: underline; }
+
+main { max-width: 1400px; margin: 0 auto; padding: 20px 16px 8px; }
+.rodape { text-align: center; color: var(--suave); font-size: 12px; padding: 16px; }
+
+.resumo {
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--borda); background: var(--cartao);
+  border-left: 8px solid var(--desconhecido);
+}
+.resumo-host { font-size: 20px; font-weight: 600; }
+.resumo-coleta { color: var(--suave); }
+.resumo-estado { font-size: 22px; font-weight: 700; padding: 6px 16px; border-radius: 6px; }
+.resumo.s-ok { border-left-color: var(--ok); } .resumo.s-ok .resumo-estado { color: var(--ok); background: var(--ok-fundo); }
+.resumo.s-atencao { border-left-color: var(--atencao); } .resumo.s-atencao .resumo-estado { color: var(--atencao); background: var(--atencao-fundo); }
+.resumo.s-critico { border-left-color: var(--critico); } .resumo.s-critico .resumo-estado { color: var(--critico); background: var(--critico-fundo); }
+.resumo.s-desconhecido .resumo-estado { color: var(--desconhecido); background: var(--desconhecido-fundo); }
+
+.faixa { padding: 10px 16px; border-radius: 6px; margin-bottom: 16px; }
+.faixa.s-desconhecido { background: var(--desconhecido-fundo); color: var(--desconhecido); font-weight: 600; }
+
+.grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 16px; align-items: start; }
+.cartao { background: var(--cartao); border: 1px solid var(--borda); border-radius: 8px; padding: 14px 16px; min-width: 0; }
+.cartao.estreito { max-width: 420px; margin: 24px auto; }
+.cartao.eventos { margin-top: 16px; }
+.cartao > header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.cartao h2 { font-size: 16px; margin: 0; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; vertical-align: top; padding: 7px 6px; border-top: 1px solid var(--borda); }
+tr:first-child > th, tr:first-child > td { border-top: none; }
+thead th { color: var(--suave); font-weight: 600; font-size: 13px; }
+tbody tr:first-child > td { border-top: 1px solid var(--borda); }
+th[scope="row"] { font-weight: 600; width: 34%; overflow-wrap: anywhere; }
+td { overflow-wrap: anywhere; }
+.col-selo { width: 1%; white-space: nowrap; text-align: right; }
+tr.ignorado { color: var(--ignorado); }
+.detalhe { color: var(--suave); font-size: 13px; }
+.vazio { color: var(--suave); }
+.nowrap { white-space: nowrap; }
+.destaque { color: var(--critico); font-weight: 700; }
+.rolagem { overflow-x: auto; }
+
+.selo { display: inline-block; padding: 1px 9px; border-radius: 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.selo.s-ok { color: var(--ok); background: var(--ok-fundo); }
+.selo.s-atencao { color: var(--atencao); background: var(--atencao-fundo); }
+.selo.s-critico { color: var(--critico); background: var(--critico-fundo); }
+.selo.s-desconhecido { color: var(--desconhecido); background: var(--desconhecido-fundo); }
+.selo.s-ignorado { color: var(--ignorado); background: var(--ignorado-fundo); }
+
+progress { display: block; width: 100%; height: 8px; margin: 4px 0 2px; border: none; border-radius: 4px;
+  background: var(--fundo); -webkit-appearance: none; appearance: none; color: var(--ok); }
+progress::-webkit-progress-bar { background: var(--fundo); border-radius: 4px; }
+progress::-webkit-progress-value { background: currentColor; border-radius: 4px; }
+progress::-moz-progress-bar { background: currentColor; border-radius: 4px; }
+progress.s-atencao { color: #d38b00; }
+progress.s-critico { color: var(--critico); }
+progress.s-desconhecido { color: var(--desconhecido); }
+
+.aviso { padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; }
+.aviso-ok { background: var(--ok-fundo); color: var(--ok); }
+.aviso-erro { background: var(--critico-fundo); color: var(--critico); }
+
+.formulario { display: grid; gap: 12px; margin: 8px 0; }
+.formulario.linha { grid-template-columns: 1fr auto; }
+.formulario label { display: grid; gap: 4px; font-weight: 600; font-size: 14px; }
+.formulario label.check { display: flex; gap: 8px; align-items: center; }
+input, select { font: inherit; padding: 7px 9px; border: 1px solid #b9c3cf; border-radius: 5px; background: #fff; min-width: 0; }
+button { font: inherit; padding: 7px 14px; border-radius: 5px; border: 1px solid #1f5fa8; background: #1f5fa8; color: #fff; cursor: pointer; }
+button:hover { background: #184c86; }
+button.secundario { background: #fff; color: #1f5fa8; }
+button.perigo { background: #fff; color: var(--critico); border-color: var(--critico); }
+button.link { background: none; border: none; padding: 0; }
+form.inline { display: inline; }
+.acoes { white-space: nowrap; text-align: right; }
+.cartao form.inline + form.inline { margin-left: 4px; }
+
+@media (max-width: 600px) {
+  .topo { padding: 10px 16px; }
+  th[scope="row"] { width: auto; }
+  .resumo-estado { font-size: 18px; }
+  .acoes { white-space: normal; }
+}

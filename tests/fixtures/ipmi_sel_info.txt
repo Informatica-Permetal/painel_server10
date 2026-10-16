@@ -1,0 +1,8 @@
+SEL Information
+Version          : 1.5 (v1.5, v2 compliant)
+Entries          : 1
+Free Space       : 8176 bytes
+Percent Used     : 0%
+Last Add Time    : 10/16/2026 11:14:59
+Last Del Time    : 10/16/2026 11:14:59
+Overflow         : false

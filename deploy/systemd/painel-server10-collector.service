@@ -1,0 +1,22 @@
+[Unit]
+Description=Painel Server10 - coleta de hardware (somente leitura)
+After=network-online.target
+
+[Service]
+Type=oneshot
+# root é necessário para MegaCLI, smartctl e ipmitool; os comandos são fixos no código.
+User=root
+Group=painel
+UMask=0007
+EnvironmentFile=/etc/painel-server10/painel.env
+WorkingDirectory=/opt/painel-server10
+ExecStart=/opt/painel-server10/venv/bin/python -m painel.collector
+TimeoutStartSec=600
+Nice=10
+IOSchedulingClass=idle
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+ReadWritePaths=/var/lib/painel-server10

@@ -1,0 +1,10 @@
+[Unit]
+Description=Painel Server10 - verifica coleta parada a cada 10 minutos
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=10min
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

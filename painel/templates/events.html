@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Eventos · Painel Server10{% endblock %}
+{% block content %}
+<section class="cartao eventos">
+  <header><h2>Histórico de ocorrências</h2><span class="detalhe">últimos {{ events|length }} registros</span></header>
+  {% include "_events_table.html" %}
+</section>
+{% endblock %}

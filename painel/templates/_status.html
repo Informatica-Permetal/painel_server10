@@ -1,0 +1,45 @@
+{% if not snap %}
+  <div class="faixa s-desconhecido">Nenhuma coleta registrada ainda. Estado: <strong>Desconhecido</strong>.</div>
+{% else %}
+  <section class="resumo s-{{ overall|status_class }}">
+    <div>
+      <div class="resumo-host">{{ snap.hostname }}</div>
+      <div class="resumo-coleta">Última coleta: {{ snap.ts|dt }} (há {{ age_min }} min)</div>
+    </div>
+    <div class="resumo-estado">{{ overall|status_label }}</div>
+  </section>
+  {% if stale %}
+    <div class="faixa s-desconhecido">Coleta parada ou atrasada: os dados abaixo podem não refletir o estado atual.</div>
+  {% endif %}
+
+  <div class="grade">
+    {% for grp in groups %}
+      <article class="cartao">
+        <header>
+          <h2>{{ grp.title }}</h2>
+          <span class="selo s-{{ grp.status|status_class }}">{{ grp.status|status_label }}</span>
+        </header>
+        <table>
+          {% for c in grp.checks %}
+            <tr class="{{ 'ignorado' if c.status == 'IGNORADO' }}">
+              <th scope="row">{{ c.label }}</th>
+              <td>
+                {{ c.value }}
+                {% if c.pct is not none %}
+                  <progress class="s-{{ c.status|status_class }}" max="100" value="{{ '%.0f'|format(c.pct) }}"></progress>
+                {% endif %}
+                {% if c.detail %}<div class="detalhe">{{ c.detail }}</div>{% endif %}
+              </td>
+              <td class="col-selo"><span class="selo s-{{ c.status|status_class }}">{{ c.status|status_label }}</span></td>
+            </tr>
+          {% endfor %}
+        </table>
+      </article>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<section class="cartao eventos">
+  <header><h2>Ocorrências recentes</h2><a href="{{ url_for('events') }}">Histórico completo</a></header>
+  {% include "_events_table.html" %}
+</section>

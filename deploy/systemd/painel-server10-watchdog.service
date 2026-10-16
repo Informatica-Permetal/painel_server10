@@ -1,0 +1,19 @@
+[Unit]
+Description=Painel Server10 - alerta de coleta parada
+
+[Service]
+Type=oneshot
+User=painel
+Group=painel
+UMask=0007
+EnvironmentFile=/etc/painel-server10/painel.env
+WorkingDirectory=/opt/painel-server10
+ExecStart=/opt/painel-server10/venv/bin/python -m painel.collector --watchdog
+
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ReadWritePaths=/var/lib/painel-server10

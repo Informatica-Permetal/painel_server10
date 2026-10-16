@@ -1,0 +1,25 @@
+# Ambiente Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Configuração e segredos (nunca versionar)
+.env
+*.env
+!.env.example
+*.key
+*.pem
+*.crt
+*.p12
+
+# Dados de produção / estado local
+*.db
+*.db-journal
+*.sqlite
+*.log
+dev-data/
+
+# Anotações internas da equipe
+painel_server10_plano_prompts_claude.md

@@ -1,0 +1,26 @@
+Temp             | 01h | ns  |  3.1 | Disabled
+Temp             | 02h | ns  |  3.2 | Disabled
+Ambient Temp     | 0Eh | ok  |  7.1 | 19 degrees C
+Planar Temp      | 0Fh | ns  |  7.1 | Disabled
+CMOS Battery     | 10h | ok  |  7.1 |
+VCORE PG         | 11h | ok  |  3.1 | State Deasserted
+FAN MOD 1A RPM   | 30h | ok  |  7.1 | 3600 RPM
+FAN MOD 2A RPM   | 31h | ok  |  7.1 | 3480 RPM
+FAN MOD 3A RPM   | 32h | ok  |  7.1 | 3600 RPM
+FAN MOD 4A RPM   | 33h | ok  |  7.1 | 3480 RPM
+FAN MOD 5A RPM   | 34h | ns  |  7.1 | Disabled
+Fan Redundancy   | 75h | ok  |  7.1 | Fully Redundant
+Presence         | 50h | ok  |  3.1 | Presence detected
+Status           | 60h | ok  |  3.1 | Presence detected
+Current 1        | 95h | ok  | 10.1 | 0.40 Amps
+Current 2        | 96h | ok  | 10.2 | 0.40 Amps
+Voltage 1        | 97h | ok  | 10.1 | 220 Volts
+Voltage 2        | 99h | ok  | 10.2 | 218 Volts
+System Level     | 9Ah | ok  |  7.1 | 168 Watts
+Status           | 85h | ok  | 10.1 | Presence detected
+Status           | 86h | ok  | 10.2 | Presence detected
+PS Redundancy    | 77h | ok  |  7.1 | Fully Redundant
+ECC Corr Err     | 01h | ns  | 34.1 | No Reading
+Intrusion        | 73h | ok  |  7.1 |
+OS Watchdog      | 71h | ok  |  7.1 |
+SEL              | 72h | ns  |  7.1 | No Reading

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Entrar · Painel Server10{% endblock %}
+{% block content %}
+<section class="cartao estreito">
+  <header><h2>Acesso administrativo</h2></header>
+  {% if not configured %}
+    <p class="aviso aviso-erro">Login não configurado: defina ADMIN_PASSWORD_HASH no arquivo privado do servidor.</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('login') }}" class="formulario">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ next }}">
+    <label>Usuário <input name="usuario" autocomplete="username" required autofocus></label>
+    <label>Senha <input name="senha" type="password" autocomplete="current-password" required></label>
+    <button type="submit">Entrar</button>
+  </form>
+</section>
+{% endblock %}

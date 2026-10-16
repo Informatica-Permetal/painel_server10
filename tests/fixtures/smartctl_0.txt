@@ -1,0 +1,39 @@
+smartctl 7.4 2023-08-01 r5530 [x86_64-linux-6.8.0-generic] (local build)
+Copyright (C) 2002-23, Bruce Allen, Christian Franke, www.smartmontools.org
+
+=== START OF INFORMATION SECTION ===
+Vendor:               SEAGATE
+Product:              ST3300657SS
+Revision:             0008
+Compliance:           SPC-3
+User Capacity:        300,000,000,000 bytes [300 GB]
+Logical block size:   512 bytes
+Rotation Rate:        15000 rpm
+Serial number:        TESTSER0
+Device type:          disk
+Transport protocol:   SAS (SPL-4)
+SMART support is:     Available - device has SMART capability.
+SMART support is:     Enabled
+Temperature Warning:  Enabled
+
+=== START OF READ SMART DATA SECTION ===
+SMART Health Status: OK
+
+Current Drive Temperature:     34 C
+Drive Trip Temperature:        68 C
+
+Accumulated power on time, hours:minutes 70000:12
+Accumulated start-stop cycles:  80
+Elements in grown defect list: 9
+
+Error counter log:
+           Errors Corrected by           Total   Correction     Gigabytes    Total
+               ECC          rereads/    errors   algorithm      processed    uncorrected
+           fast | delayed   rewrites  corrected  invocations   [10^9 bytes]  errors
+read:   11111111        5         0  11111116   11111116      45678.123           1
+write:         0        0         0         0          0      12345.678           0
+verify:   222222        0         0    222222     222222          0.000           0
+
+Non-medium error count:       7
+
+No Self-tests have been logged
