@@ -1,39 +1,63 @@
-<!doctype html>
-<html lang="pt-BR">
+{% from "_macros.html" import ic %}<!doctype html>
+<html lang="pt-BR" data-theme="{{ THEMES[theme_name()] }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#16191d" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#eef0f2" media="(prefers-color-scheme: light)">
+  <meta name="robots" content="noindex, nofollow">
   <title>{% block title %}Painel Server10{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ static_url('favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ static_url('style.css') }}">
 </head>
-<body>
-  <header class="topo">
-    <div class="marca">Painel <strong>Server10</strong></div>
-    <nav>
-      {% if public_dashboard or is_admin() %}
-        <a href="{{ url_for('index') }}">Painel</a>
-        <a href="{{ url_for('events') }}">Eventos</a>
-      {% endif %}
+<body class="{% block body_class %}{% endblock %}">
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  {% include "_icons.html" %}
+  <header class="barra">
+    <a class="marca" href="{{ url_for('index') }}" translate="no">
+      {{ ic('server', 'marca-ic') }}<span>Painel <strong>Server10</strong></span>
+    </a>
+    {% if public_dashboard or is_admin() %}
+    <nav class="nav" aria-label="Principal">
+      {% set ep = request.endpoint %}
+      <a href="{{ url_for('index') }}" {% if ep == 'index' %}aria-current="page"{% endif %}>{{ ic('activity') }}<span>Painel</span></a>
+      <a href="{{ url_for('events') }}" {% if ep == 'events' %}aria-current="page"{% endif %}>{{ ic('list') }}<span>Eventos</span></a>
       {% if is_admin() %}
-        <a href="{{ url_for('admin') }}">Administração</a>
-        <form method="post" action="{{ url_for('logout') }}" class="inline">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="link">Sair</button>
-        </form>
-      {% else %}
-        <a href="{{ url_for('login') }}">Entrar</a>
+      <a href="{{ url_for('admin') }}" {% if ep == 'admin' %}aria-current="page"{% endif %}>{{ ic('mail') }}<span>Alertas</span></a>
       {% endif %}
     </nav>
+    {% endif %}
+    <div class="barra-acoes">
+      <form class="tema" method="post" action="{{ url_for('set_theme') }}" aria-label="Tema da interface">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="voltar" value="{{ request.full_path if request.method == 'GET' else '/' }}">
+        {% set atual = theme_name() %}
+        {% for valor, icone, nome in [('escuro', 'moon', 'Escuro'), ('claro', 'sun', 'Claro'), ('sistema', 'monitor', 'Seguir o sistema')] %}
+        <button type="submit" name="tema" value="{{ valor }}" class="tema-op" aria-pressed="{{ 'true' if atual == valor else 'false' }}" aria-label="Tema: {{ nome }}" title="{{ nome }}">{{ ic(icone) }}</button>
+        {% endfor %}
+      </form>
+      {% if is_admin() %}
+      <form method="post" action="{{ url_for('logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="botao-sair" aria-label="Sair da sessão administrativa" title="Sair">{{ ic('logout') }}<span>Sair</span></button>
+      </form>
+      {% endif %}
+    </div>
   </header>
-  <main>
+  <main id="conteudo" tabindex="-1">
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="aviso aviso-{{ category }}">{{ message }}</div>
-      {% endfor %}
+      {% if messages %}
+      <div class="avisos" role="status" aria-live="polite">
+        {% for category, message in messages %}
+        <p class="aviso aviso-{{ category }}">{{ ic('ok' if category == 'ok' else 'warn') }}<span>{{ message }}</span></p>
+        {% endfor %}
+      </div>
+      {% endif %}
     {% endwith %}
     {% block content %}{% endblock %}
   </main>
-  <footer class="rodape">Painel Server10 v{{ version }} · somente leitura do hardware</footer>
-  {% block scripts %}{% endblock %}
+  <footer class="rodape"><span translate="no">Painel Server10 v{{ version }}</span><span>Leitura do hardware feita pelo coletor a cada 5 minutos</span></footer>
+  <script src="{{ static_url('app.js') }}" defer></script>
 </body>
 </html>

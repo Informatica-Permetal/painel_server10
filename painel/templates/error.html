@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "_macros.html" import sicon %}
+{% block title %}Erro {{ code }} · Painel Server10{% endblock %}
+{% block content %}
+<section class="vazio-geral">
+  {{ sicon('DESCONHECIDO', 'grande') }}
+  <h1>{{ message }}</h1>
+  <p>Código {{ code }}. <a href="{{ url_for('index') }}">Voltar ao painel</a>.</p>
+</section>
+{% endblock %}

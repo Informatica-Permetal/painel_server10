@@ -148,8 +148,16 @@ def insert_event(conn, ts, kind, key, label, prev_status, status, message, notif
         (ts, kind, key, label, prev_status, status, message, 1 if notify else 0))
 
 
-def recent_events(conn, limit=200):
+def recent_events(conn, limit=200, status=None):
+    if status:
+        return conn.execute("SELECT * FROM events WHERE status = ? ORDER BY id DESC LIMIT ?",
+                            (status, limit)).fetchall()
     return conn.execute("SELECT * FROM events ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+
+
+def count_events_by_status(conn):
+    return {r["status"]: r["n"] for r in
+            conn.execute("SELECT status, COUNT(*) AS n FROM events GROUP BY status")}
 
 
 def list_counters(conn):

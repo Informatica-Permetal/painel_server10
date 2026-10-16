@@ -75,10 +75,10 @@ def system_checks(sysinfo, cfg):
         ratio = load[2] / ncpu
         status = CRITICO if ratio > 2.0 else ATENCAO if ratio > 1.0 else OK
         pct = cpu["percent"]
-        value = (f"{num(pct, 0)}% em uso · " if pct is not None else "") + \
-            f"carga {num(load[0], 2)} / {num(load[1], 2)} / {num(load[2], 2)}"
-        out.append(check("sistema.cpu", g, "CPU", status, value,
-                         f"{ncpu} núcleos lógicos; carga média de 1, 5 e 15 min", pct))
+        value = f"Carga {num(load[0], 2)} / {num(load[1], 2)} / {num(load[2], 2)}"
+        detail = (f"{num(pct, 0)}% em uso, " if pct is not None else "") + \
+            f"{ncpu} núcleos lógicos (carga média de 1, 5 e 15 min)"
+        out.append(check("sistema.cpu", g, "CPU", status, value, detail, pct))
     else:
         out.append(unknown("sistema.cpu", g, "CPU", sysinfo.get("cpu_error", "")))
 
@@ -198,7 +198,16 @@ def disk_checks(pds, smart, baselines, cfg, pd_error=""):
                 detail += " · controladora sinalizou alerta S.M.A.R.T."
             if raised:
                 detail += " · aumento desde a linha de base: " + ", ".join(PD_COUNTERS[n] for n in raised)
-            out.append(check(key, g, f"{label} · estado", status, value, detail))
+            item = check(key, g, f"{label} · estado", status, value, detail)
+            item["facts"] = [
+                {"label": "Erros de mídia", "value": pd.get("media_errors"),
+                 "base": baselines.get(f"pd.{disk_id}.media_errors"), "raised": "media_errors" in raised},
+                {"label": "Outros erros", "value": pd.get("other_errors"), "base": None, "raised": False},
+                {"label": "Falhas preditivas", "value": pd.get("predictive_failures"),
+                 "base": baselines.get(f"pd.{disk_id}.predictive_failures"),
+                 "raised": "predictive_failures" in raised},
+            ]
+            out.append(item)
 
         key = f"disco.{disk_id}.smart"
         data = smart.get(disk_id)
@@ -206,7 +215,7 @@ def disk_checks(pds, smart, baselines, cfg, pd_error=""):
             out.append(unknown(key, g, f"{label} · SMART", "smartctl sem resposta válida"))
             continue
         status = OK if data["health"].upper() == "OK" else CRITICO
-        parts, raised = [], False
+        parts, facts, raised = [], [], False
         for name, text in SMART_COUNTERS.items():
             if name not in data:
                 continue
@@ -216,6 +225,7 @@ def disk_checks(pds, smart, baselines, cfg, pd_error=""):
                 raised = True
                 mark = " ▲"
             parts.append(f"{text}: {data[name]} (base {base}){mark}")
+            facts.append({"label": text, "value": data[name], "base": base, "raised": data[name] > base})
         if raised and status == OK:
             status = ATENCAO
         value = f"Saúde {data['health']}"
@@ -223,7 +233,9 @@ def disk_checks(pds, smart, baselines, cfg, pd_error=""):
             value += f" · {data['temperature']} °C"
         if data.get("power_on_hours") is not None:
             value += f" · {data['power_on_hours']} h ligado"
-        out.append(check(key, g, f"{label} · SMART", status, value, " · ".join(parts)))
+        item = check(key, g, f"{label} · SMART", status, value, " · ".join(parts))
+        item["facts"] = facts
+        out.append(item)
     return out
 
 
@@ -313,6 +325,25 @@ def ipmi_group(sensor):
     return "outros"
 
 
+_READINGS = {
+    "fully redundant": "Redundância completa",
+    "redundancy lost": "Redundância perdida",
+    "presence detected": "Presente",
+    "state deasserted": "Normal",
+    "disabled": "Desativado",
+    "no reading": "Sem leitura",
+}
+
+
+def humanize_reading(reading):
+    """Texto de exibição; as regras sempre avaliam a leitura original do ipmitool."""
+    text = _READINGS.get(reading.strip().lower())
+    if text:
+        return text
+    text = reading.replace(" degrees C", " °C").replace(" Amps", " A").replace(" Volts", " V").replace(" Watts", " W")
+    return re.sub(r"(\d)\.(\d)", r"\1,\2", text)
+
+
 def _slug(text):
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
 
@@ -357,7 +388,7 @@ def ipmi_checks(sensors, cfg, error=""):
         if status != IGNORADO:
             found.add(g)
         out.append(check(f"ipmi.{_slug(s['id'])}.{_slug(s['name'])}", g, label, status,
-                         s["reading"], detail))
+                         humanize_reading(s["reading"]), detail))
     for g in groups:
         if g not in found:
             out.append(check(f"{g}.ausente", g, "Sensores IPMI", DESCONHECIDO, "Sem sensores ativos",

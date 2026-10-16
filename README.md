@@ -15,6 +15,12 @@ histórico de ocorrências e alertas por e-mail sem repetição.
 
 Dependências: Python 3, Flask e gunicorn. Banco SQLite em `/var/lib/painel-server10/painel.db`.
 
+Interface: HTML/Jinja, CSS e JavaScript puros (~33 KB no total, com cache de 7 dias), ícones SVG locais e
+fontes do sistema, sem CDN. Tema escuro por padrão, com opções claro e seguir o sistema (preferência
+guardada em cookie não sensível). O painel recarrega só o trecho de estado a cada 60 s, pausando com a aba
+oculta, e lê apenas a última coleta gravada: abrir o navegador nunca dispara consultas ao hardware. Os
+estados usam forma de ícone e texto, além da cor.
+
 Regras principais:
 
 - Falha ou saída inesperada de um comando vira **Desconhecido**, nunca OK. Coleta mais antiga que

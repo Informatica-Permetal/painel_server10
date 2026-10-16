@@ -1,0 +1,11 @@
+{% macro ic(name, cls="") -%}
+<svg class="ic {{ cls }}" aria-hidden="true" focusable="false"><use href="#i-{{ name }}"></use></svg>
+{%- endmacro %}
+
+{% macro sicon(status, cls="") -%}
+<svg class="ic ic-estado {{ cls }}" aria-hidden="true" focusable="false"><use href="#i-{{ STATUS_ICONS.get(status, 'unk') }}"></use></svg>
+{%- endmacro %}
+
+{% macro pill(status) -%}
+<span class="pilula s-{{ status|status_class }}">{{ sicon(status) }}<span>{{ status|status_label }}</span></span>
+{%- endmacro %}

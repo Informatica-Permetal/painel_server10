@@ -1,0 +1,23 @@
+{% from "_macros.html" import ic, sicon %}
+{% if events %}
+<ol class="linha-tempo">
+  {% for ev in events %}
+  <li class="ev s-{{ ev.status|status_class }}">
+    {{ sicon(ev.status) }}
+    <div class="ev-corpo">
+      <p class="ev-titulo"><span translate="no">{{ ev.label }}</span>
+        {% if ev.prev_status %}<span class="ev-transicao">{{ ev.prev_status|status_label }} <span aria-hidden="true">→</span><span class="sr">para</span> {{ ev.status|status_label }}</span>
+        {% else %}<span class="ev-transicao">{{ ev.status|status_label }}</span>{% endif %}
+      </p>
+      <p class="ev-msg">{{ ev.message }}</p>
+    </div>
+    <div class="ev-meta">
+      <time datetime="{{ ev.ts }}" title="{{ ev.ts|dt }}">{{ ev.ts|hm }}</time>
+      {% if ev.notified_at %}<span class="ev-email" title="E-mail enviado em {{ ev.notified_at|dt }}">{{ ic('mail') }}<span class="sr">E-mail enviado</span></span>{% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ol>
+{% else %}
+<p class="vazio">Nenhuma ocorrência registrada{{ ' com este estado' if current }}.</p>
+{% endif %}

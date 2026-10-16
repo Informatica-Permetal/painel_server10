@@ -1,17 +1,26 @@
 {% extends "base.html" %}
+{% from "_macros.html" import ic %}
 {% block title %}Entrar · Painel Server10{% endblock %}
+{% block body_class %}pagina-login{% endblock %}
 {% block content %}
-<section class="cartao estreito">
-  <header><h2>Acesso administrativo</h2></header>
+<section class="login" aria-labelledby="titulo-login">
+  <div class="login-marca" aria-hidden="true">
+    <span class="login-rack"><span></span><span></span></span>
+  </div>
+  <h1 id="titulo-login">Painel Server10</h1>
+  <p class="sutil">Monitoramento do servidor da rede interna. Entre com a conta administrativa.</p>
   {% if not configured %}
-    <p class="aviso aviso-erro">Login não configurado: defina ADMIN_PASSWORD_HASH no arquivo privado do servidor.</p>
+  <p class="aviso aviso-erro" role="alert">{{ ic('warn') }}<span>Login não configurado. Defina <code>ADMIN_PASSWORD_HASH</code> no arquivo privado do servidor.</span></p>
   {% endif %}
   <form method="post" action="{{ url_for('login') }}" class="formulario">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="next" value="{{ next }}">
-    <label>Usuário <input name="usuario" autocomplete="username" required autofocus></label>
-    <label>Senha <input name="senha" type="password" autocomplete="current-password" required></label>
-    <button type="submit">Entrar</button>
+    <label for="usuario">Usuário</label>
+    <input id="usuario" name="usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
+    <label for="senha">Senha</label>
+    <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+    <button type="submit" class="botao botao-primario">{{ ic('lock') }}<span>Entrar</span></button>
   </form>
+  <p class="login-nota">{{ ic('shield') }}<span>Sessão expira em 8 horas. Após 5 tentativas incorretas, o acesso é bloqueado por 15 minutos.</span></p>
 </section>
 {% endblock %}

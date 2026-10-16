@@ -1,45 +1,187 @@
+{% from "_macros.html" import ic, sicon, pill %}
 {% if not snap %}
-  <div class="faixa s-desconhecido">Nenhuma coleta registrada ainda. Estado: <strong>Desconhecido</strong>.</div>
+<section class="vazio-geral">
+  {{ sicon('DESCONHECIDO', 'grande') }}
+  <h1>Aguardando a primeira coleta</h1>
+  <p>O coletor ainda não registrou dados. Ele roda a cada 5 minutos; se a espera passar disso, verifique
+    <code>systemctl status painel-server10-collector.timer</code> no servidor.</p>
+</section>
 {% else %}
-  <section class="resumo s-{{ overall|status_class }}">
-    <div>
-      <div class="resumo-host">{{ snap.hostname }}</div>
-      <div class="resumo-coleta">Última coleta: {{ snap.ts|dt }} (há {{ age_min }} min)</div>
-    </div>
-    <div class="resumo-estado">{{ overall|status_label }}</div>
-  </section>
-  {% if stale %}
-    <div class="faixa s-desconhecido">Coleta parada ou atrasada: os dados abaixo podem não refletir o estado atual.</div>
-  {% endif %}
 
-  <div class="grade">
-    {% for grp in groups %}
-      <article class="cartao">
-        <header>
-          <h2>{{ grp.title }}</h2>
-          <span class="selo s-{{ grp.status|status_class }}">{{ grp.status|status_label }}</span>
-        </header>
-        <table>
-          {% for c in grp.checks %}
-            <tr class="{{ 'ignorado' if c.status == 'IGNORADO' }}">
-              <th scope="row">{{ c.label }}</th>
-              <td>
-                {{ c.value }}
-                {% if c.pct is not none %}
-                  <progress class="s-{{ c.status|status_class }}" max="100" value="{{ '%.0f'|format(c.pct) }}"></progress>
-                {% endif %}
-                {% if c.detail %}<div class="detalhe">{{ c.detail }}</div>{% endif %}
-              </td>
-              <td class="col-selo"><span class="selo s-{{ c.status|status_class }}">{{ c.status|status_label }}</span></td>
-            </tr>
-          {% endfor %}
-        </table>
-      </article>
-    {% endfor %}
+<section class="visao s-{{ overall|status_class }}" aria-labelledby="titulo-estado">
+  <div class="visao-texto">
+    <p class="visao-host" translate="no">{{ snap.hostname }}</p>
+    <h1 id="titulo-estado" class="visao-estado">{{ sicon(overall, 'grande') }}<span>{{ headline }}</span></h1>
+    <p class="visao-resumo" aria-live="polite">{{ summary.sentence }}</p>
+    <dl class="visao-meta">
+      <div>
+        <dt>{{ ic('clock') }}Última coleta</dt>
+        <dd><time datetime="{{ snap.ts }}">{{ snap.ts|dt }}</time> <span class="sutil">{{ age_text }}</span></dd>
+      </div>
+      <div>
+        <dt>{{ ic('activity') }}Tempo ligado</dt>
+        <dd>{{ uptime or "Sem leitura" }}</dd>
+      </div>
+      <div>
+        <dt>{{ ic('list') }}Coletas em 24 h</dt>
+        <dd>{% if availability %}{{ availability.pct }}% <span class="sutil">({{ availability.count }} registros)</span>{% else %}—{% endif %}</dd>
+      </div>
+    </dl>
   </div>
+
+  <figure class="chassi" aria-label="Painel frontal do servidor">
+    <figcaption class="chassi-topo">
+      <span translate="no">PowerEdge R710</span>
+      <span class="chassi-luz s-{{ overall|status_class }}">{{ sicon(overall) }}<span class="sr">Estado geral: {{ overall|status_label }}</span></span>
+    </figcaption>
+    <div class="chassi-corpo">
+      <div class="cg cg-discos">
+        <span class="cg-nome">Discos SAS</span>
+        <ul class="baias">
+          {% for d in hw.disks %}
+          <li class="baia s-{{ d.status|status_class }}" title="{{ d.title }}: {{ d.status|status_label }}">
+            <span class="baia-led">{{ sicon(d.status) }}</span>
+            <span class="baia-nome">{{ d.name }}</span>
+            <span class="baia-estado">{{ d.status|status_label }}</span>
+          </li>
+          {% else %}
+          <li class="baia s-desconhecido"><span class="baia-led">{{ sicon('DESCONHECIDO') }}</span><span class="baia-nome">Sem leitura</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="cg">
+        <span class="cg-nome">RAID</span>
+        {% set r = hw.raid or {'status': 'DESCONHECIDO', 'text': 'Sem leitura'} %}
+        <span class="indicador s-{{ r.status|status_class }}">{{ sicon(r.status) }}<span>{{ r.text or (r.status|status_label) }}</span></span>
+      </div>
+      <div class="cg">
+        <span class="cg-nome">BBU</span>
+        {% set b = hw.bbu or {'status': 'DESCONHECIDO', 'text': 'Sem leitura'} %}
+        <span class="indicador s-{{ b.status|status_class }}">{{ sicon(b.status) }}<span>{{ b.text }}</span></span>
+      </div>
+      <div class="cg">
+        <span class="cg-nome">Fontes</span>
+        <ul class="leds">
+          {% for p in hw.psus %}
+          <li class="indicador s-{{ p.status|status_class }}" title="{{ p.name }}: {{ p.status|status_label }}">{{ sicon(p.status) }}<span>{{ p.name }}</span></li>
+          {% else %}
+          <li class="indicador s-desconhecido">{{ sicon('DESCONHECIDO') }}<span>Sem leitura</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="cg cg-fans">
+        <span class="cg-nome">Ventoinhas</span>
+        <ul class="leds leds-fan">
+          {% for f in hw.fans %}
+          <li class="fan s-{{ f.status|status_class }}" title="{{ f.title }}: {{ f.text }} ({{ f.status|status_label }})">{{ sicon(f.status) }}<span>{{ f.name }}</span><span class="sr">{{ f.status|status_label }}</span></li>
+          {% else %}
+          <li class="fan s-desconhecido">{{ sicon('DESCONHECIDO') }}<span class="sr">Sem leitura</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="cg">
+        <span class="cg-nome">Entrada de ar</span>
+        {% set a = hw.ambient or {'status': 'DESCONHECIDO', 'text': 'Sem leitura'} %}
+        <span class="indicador s-{{ a.status|status_class }}">{{ sicon(a.status) }}<span class="num">{{ a.text }}</span></span>
+      </div>
+    </div>
+  </figure>
+</section>
+
+{% if stale %}
+<p class="faixa" role="alert">{{ sicon('DESCONHECIDO') }}<span>A coleta está atrasada ({{ age_text }}). Os dados abaixo podem não refletir o estado atual do servidor.</span></p>
 {% endif %}
 
-<section class="cartao eventos">
-  <header><h2>Ocorrências recentes</h2><a href="{{ url_for('events') }}">Histórico completo</a></header>
-  {% include "_events_table.html" %}
+{% if summary.problems %}
+<section class="pendencias" aria-labelledby="titulo-pendencias">
+  <h2 id="titulo-pendencias">O que precisa de atenção</h2>
+  <ul>
+    {% for c in summary.problems %}
+    <li class="s-{{ c.status|status_class }}">
+      <a href="#{{ 'recursos' if c.group in ('sistema', 'armazenamento') else 'grupo-' ~ c.group }}">
+        {{ sicon(c.status) }}
+        <span class="pend-texto"><strong>{{ c.label }}</strong> <span class="sutil">{{ group_titles.get(c.group, c.group) }}</span></span>
+        <span class="pend-valor">{{ c.value }}</span>
+        <span class="pend-estado">{{ c.status|status_label }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section class="recursos" id="recursos" aria-label="Recursos do sistema">
+  <ul class="medidores">
+    {% for m in meters %}
+    <li class="medidor s-{{ m.status|status_class }}">
+      <div class="medidor-topo">{{ ic(m.icon) }}<span class="medidor-nome" translate="no">{{ m.label }}</span>{% if m.status != 'OK' %}{{ pill(m.status) }}{% endif %}</div>
+      {% if m.pct is not none %}
+      <p class="medidor-valor num">{{ '%.0f'|format(m.pct) }}<span>%</span></p>
+      <progress class="s-{{ m.status|status_class }}" max="100" value="{{ '%.0f'|format(m.pct) }}" aria-label="{{ m.label }}: {{ '%.0f'|format(m.pct) }}%"></progress>
+      {% else %}
+      <p class="medidor-valor medidor-sem">Sem leitura</p>
+      {% endif %}
+      <p class="medidor-texto num">{{ m.text }}</p>
+      {% if m.detail %}<p class="medidor-detalhe">{{ m.detail }}</p>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<div class="paineis">
+  {% for grp in groups %}
+  <section class="painel painel-{{ grp.id }} s-{{ grp.status|status_class }}" id="grupo-{{ grp.id }}" aria-labelledby="t-{{ grp.id }}">
+    <header class="painel-topo">
+      <span class="painel-ic">{{ ic(grp.icon) }}</span>
+      <h2 id="t-{{ grp.id }}">{{ grp.title }}</h2>
+      {{ pill(grp.status) }}
+    </header>
+    <ul class="itens">
+      {% for c in grp.checks %}
+      <li class="item s-{{ c.status|status_class }}">
+        {{ sicon(c.status) }}
+        <div class="item-corpo">
+          <div class="item-linha">
+            <span class="item-nome" translate="no">{{ c.label }}</span>
+            <span class="item-valor num">{{ c.value }}</span>
+          </div>
+          {% if c.facts %}
+          <dl class="fatos">
+            {% for f in c.facts if f.value is not none %}
+            <div class="{{ 'subiu' if f.raised }}">
+              <dt>{{ f.label }}</dt>
+              <dd class="num">{{ f.value }}{% if f.base is not none %} <span class="sutil">base {{ f.base }}</span>{% endif %}{% if f.raised %} <span class="subiu-marca">aumentou</span>{% endif %}</dd>
+            </div>
+            {% endfor %}
+          </dl>
+          {% elif c.detail %}
+          <p class="item-detalhe">{{ c.detail }}</p>
+          {% endif %}
+        </div>
+        <span class="item-estado{{ ' sr' if c.status == 'OK' }}">{{ c.status|status_label }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% if grp.ignored %}
+    <details class="desativados" id="des-{{ grp.id }}">
+      <summary>{{ ic('chevron') }}{{ grp.ignored|length }} sensor{{ 'es' if grp.ignored|length > 1 }} desativado{{ 's' if grp.ignored|length > 1 }} (não gera{{ 'm' if grp.ignored|length > 1 }} alerta)</summary>
+      <ul class="itens">
+        {% for c in grp.ignored %}
+        <li class="item s-ignorado">{{ sicon(c.status) }}<div class="item-corpo"><div class="item-linha"><span class="item-nome" translate="no">{{ c.label }}</span><span class="item-valor">{{ c.value }}</span></div></div><span class="item-estado sr">Desativado</span></li>
+        {% endfor %}
+      </ul>
+    </details>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% endif %}
+
+<section class="painel eventos-recentes" aria-labelledby="titulo-eventos">
+  <header class="painel-topo">
+    <span class="painel-ic">{{ ic('list') }}</span>
+    <h2 id="titulo-eventos">Ocorrências recentes</h2>
+    <a class="link-acao" href="{{ url_for('events') }}">Ver histórico{{ ic('chevron') }}</a>
+  </header>
+  {% include "_events_list.html" %}
 </section>

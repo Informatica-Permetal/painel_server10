@@ -1,8 +1,19 @@
 {% extends "base.html" %}
+{% from "_macros.html" import ic, sicon %}
 {% block title %}Eventos · Painel Server10{% endblock %}
 {% block content %}
-<section class="cartao eventos">
-  <header><h2>Histórico de ocorrências</h2><span class="detalhe">últimos {{ events|length }} registros</span></header>
-  {% include "_events_table.html" %}
+<div class="pagina-topo">
+  <h1>Histórico de ocorrências</h1>
+  <p class="sutil">Mudanças de estado, aumentos de contadores, novos registros no SEL e ações administrativas. Eventos dos últimos 12 meses.</p>
+</div>
+<nav class="filtros" aria-label="Filtrar por estado">
+  <a href="{{ url_for('events') }}" {% if not current %}aria-current="page"{% endif %}>Todos <span class="num">{{ counts.values()|sum }}</span></a>
+  {% for f in filters %}
+  <a href="{{ url_for('events', estado=f) }}" class="s-{{ f|status_class }}" {% if current == f %}aria-current="page"{% endif %}>{{ sicon(f) }}{{ f|status_label }} <span class="num">{{ counts.get(f, 0) }}</span></a>
+  {% endfor %}
+</nav>
+<section class="painel eventos-pagina" aria-label="Ocorrências">
+  {% include "_events_list.html" %}
+  {% if events|length >= 500 %}<p class="vazio">Exibindo as 500 ocorrências mais recentes.</p>{% endif %}
 </section>
 {% endblock %}

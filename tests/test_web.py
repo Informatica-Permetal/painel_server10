@@ -127,7 +127,7 @@ def test_redirect_externo_bloqueado(client):
     token = csrf(client)
     resp = client.post("/login", data={"csrf_token": token, "usuario": "admin", "senha": SENHA,
                                        "next": "//evil.example/x"})
-    assert resp.headers["Location"] == "/admin"
+    assert resp.headers["Location"] == "/"
 
 
 def test_painel_publico_opcional(cfg, conn, runner):
@@ -144,3 +144,17 @@ def test_coleta_antiga_aparece_como_desconhecida(cfg, conn, runner):
     run_once(conn, cfg, runner, T0)  # data fixa no passado
     data = web.create_app(cfg).test_client().get("/api/status").get_json()
     assert data["stale"] is True and data["overall"] == "DESCONHECIDO"
+
+
+def test_dashboard_resume_estado_e_hardware(client, cfg, conn, runner):
+    login(client)
+    html = client.get("/").get_data(as_text=True)
+    assert "Operando normalmente" in html
+    assert "Todos os" in html and "itens monitorados estão normais" in html
+    for texto in ("Slot 0", "Slot 1", "PSU 1", "PSU 2", "Optimal", "19 °C", "sensores desativados"):
+        assert texto in html
+    # Um problema real aparece no resumo e na lista do que precisa de atenção
+    runner.replace("megacli_ld", "Optimal", "Degraded")
+    run_once(conn, cfg, runner, T0.replace(minute=5))
+    html = client.get("/parcial/status").get_data(as_text=True)
+    assert "Falha crítica" in html and "O que precisa de atenção" in html

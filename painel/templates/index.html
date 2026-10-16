@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<div id="status" data-url="{{ url_for('partial_status') }}" data-intervalo="60">
+<div id="status" class="inicial" data-url="{{ url_for('partial_status') }}" data-intervalo="60">
   {% include "_status.html" %}
 </div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}
